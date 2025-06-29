@@ -1,0 +1,9 @@
+# .gitignore
+
+# Ignore node_modules in all subfolders
+**/node_modules
+
+# Optional good practice
+*.log
+.env
+.DS_Store
