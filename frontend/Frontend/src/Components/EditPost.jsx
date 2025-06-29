@@ -21,19 +21,28 @@ function EditPost() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
+  // Auto-hide messages after 3 seconds
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => setMessage(""), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
+
   // Fetch post by slug
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/posts/${slug}`, {
-          withCredentials: true,
-        });
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/posts/${slug}`,
+          { withCredentials: true }
+        );
         setTitle(res.data.data.title);
         setContent(res.data.data.content);
         setNewSlug(res.data.data.slug);
       } catch (err) {
         console.error("Error fetching post", err);
-        setMessage("Post not found");
+        setMessage("⚠️ Post not found");
       }
     };
 
@@ -42,13 +51,13 @@ function EditPost() {
 
   const handleUpdate = async () => {
     if (!title || !content) {
-      setMessage("Title and content are required");
+      setMessage("⚠️ Title and content are required");
       return;
     }
 
     try {
       setLoading(true);
-      const res=await axios.put(
+      const res = await axios.put(
         `${import.meta.env.VITE_API_URL}/api/posts/${slug}`,
         {
           title,
@@ -59,13 +68,14 @@ function EditPost() {
           withCredentials: true,
         }
       );
-      setMessage("Post updated successfully");
-      console.log("Updated Post:", res.data.data)
-      navigate('/admin/dashboard');
-
+      setMessage("✅ Post updated successfully");
+      console.log("Updated Post:", res.data.data);
+      setTimeout(() => {
+        navigate("/admin/dashboard");
+      }, 1000);
     } catch (err) {
       console.error("Update error", err);
-      setMessage("Failed to update post");
+      setMessage("❌ Failed to update post");
     } finally {
       setLoading(false);
     }
@@ -75,7 +85,19 @@ function EditPost() {
     <div className="max-w-4xl mx-auto py-10 px-4">
       <h2 className="text-3xl font-bold mb-6 text-white">Edit Blog Post</h2>
 
-      {message && <p className="mb-4 text-sm text-yellow-300">{message}</p>}
+      {message && (
+        <p
+          className={`mb-4 text-sm ${
+            message.includes("success")
+              ? "text-green-400"
+              : message.includes("⚠️")
+              ? "text-yellow-300"
+              : "text-red-400"
+          }`}
+        >
+          {message}
+        </p>
+      )}
 
       <div className="space-y-6">
         <div>
